@@ -12,6 +12,7 @@ background_image = pygame.image.load('images/background/survey-bg.jpeg')
 background_image = pygame.transform.scale(background_image, (window_width, window_height))
 
 font = pygame.font.Font(None, 36)
+big_font = pygame.font.Font(None, 42)
 
 sprite_images = ["images/npc/1/1/1.PNG", "images/npc/1/1/4.PNG"]
 sprites = [pygame.image.load(img) for img in sprite_images]
@@ -38,9 +39,6 @@ questions = [
      "answers": ["pygame.image.load()", "pygame.load.image()", "pygame.images.get()"], "correct": 0},
     {"question": "Какая функция устанавливает заголовок окна в Pygame?",
      "answers": ["pygame.display.set_title()", "pygame.display.set_caption()", "pygame.window.title()"], "correct": 1},
-    {"question": "Какой аргумент необходимо использовать, чтобы pygame.display.flip() обновлял только часть экрана?",
-     "answers": ["Передать список прямоугольников", "Никаких дополнительных аргументов не требуется",
-                 "Передать координаты верхнего левого угла"], "correct": 1},
     {"question": "Как в Pygame создать звуковой объект?",
      "answers": ["pygame.Sound()", "pygame.audio.Sound()", "pygame.mixer.Sound()"], "correct": 2}
 ]
@@ -70,26 +68,35 @@ def display_question():
     screen.blit(background_image, (0, 0))
 
     sprite = animate_sprite()
-    sprite_rect = sprite.get_rect(midleft=(0, window_height // 2))
+    sprite_rect = sprite.get_rect(midleft=(0, window_height / 2 + 250))
     screen.blit(sprite, sprite_rect)
+    question_text = selected_questions[current_question]['question']
+    question_surface = big_font.render(question_text, True, (0, 0, 0))
+    question_box = pygame.Surface((screen.get_width() - 200, 70), pygame.SRCALPHA)
+    pygame.draw.rect(question_box, (255, 255, 255), question_box.get_rect(), border_radius=5)
+    pygame.draw.rect(question_box, (0, 0, 0), question_box.get_rect(), 2, border_radius=5)
+    question_box.blit(question_surface, (10, 10))
+    screen.blit(question_box, (100, screen.get_height() / 2 - 200))
 
-    question = selected_questions[current_question]
-    text_surface = font.render(question['question'], True, (0, 0, 0))
-    bubble_x = sprite_rect.right + 20
-    bubble_y = window_height // 2 - 100
-    bubble_surface = pygame.Surface((text_surface.get_width() + 20, (len(question['answers']) + 1) * 50), pygame.SRCALPHA)
-    pygame.draw.rect(bubble_surface, (255, 255, 255), bubble_surface.get_rect(), border_radius=5)
-    bubble_rect = bubble_surface.get_rect(topleft=(bubble_x, bubble_y))
-    screen.blit(bubble_surface, bubble_rect)
-    screen.blit(text_surface, (bubble_x + 10, bubble_y + 5))
-
+    # Draw the boxes for the answers
     answer_rects.clear()
-    for i, answer in enumerate(question['answers']):
-        answer_surface = font.render(f"{i + 1}. {answer}", True, (0, 0, 0))
-        answer_text_rect = answer_surface.get_rect(topleft=(bubble_x + 10, bubble_y + 55 + i * 50))
-        answer_rect = pygame.Rect(bubble_x + 10, bubble_y + 55 + i * 50, bubble_surface.get_width() - 20, answer_surface.get_height())
+    horizontal_margin = 50
+    for i, answer in enumerate(selected_questions[current_question]['answers']):
+        answer_surface = font.render(answer, True, (0, 0, 0))
+        answer_box = pygame.Surface((screen.get_width() / 2 - 100, 50), pygame.SRCALPHA)
+        pygame.draw.rect(answer_box, (255, 255, 255), answer_box.get_rect(), border_radius=5)
+        pygame.draw.rect(answer_box, (0, 0, 0), answer_box.get_rect(), 2, border_radius=5)
+        answer_box.blit(answer_surface, (10, 10))
+
+        answer_rect = answer_box.get_rect()
+        if i % 2 == 0:  # For left side answers
+            answer_rect.x = horizontal_margin
+        else:  # For right side answers
+            answer_rect.x = screen.get_width() / 2 + horizontal_margin / 2
+        answer_rect.y = (i // 2) * 60 + screen.get_height() / 2
         answer_rects.append(answer_rect)
-        screen.blit(answer_surface, answer_text_rect)
+
+        screen.blit(answer_box, answer_rect.topleft)
 
 
 def show_results():
