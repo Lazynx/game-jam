@@ -15,9 +15,18 @@ screen = pygame.display.set_mode((xx, yy))
 file = open('data.json', 'r')
 data = json.loads(file.read())
 file.close()
+
 backdround_image = pygame.image.load("images/floors/" + str(floor) + "-floor_kbtu.jpg")
 backdround_image = pygame.transform.scale(backdround_image, (12000, 12000))
 backdround_image_rect = backdround_image.get_rect()
+
+arrow_up = pygame.image.load("images/arrow_up.png")
+arrow_up = pygame.transform.scale(arrow_up, (arrow_up.get_size()[0]//6, arrow_up.get_size()[0]//6))
+arrow_rect = arrow_up.get_rect()
+
+arrow_down = pygame.image.load("images/arrow_down.png")
+arrow_down = pygame.transform.scale(arrow_down, (arrow_down.get_size()[0]//5, arrow_down.get_size()[0]//5))
+
 character_size = 2
 npc_list0 = os.listdir("images/npc")
 npc_list = []
@@ -36,7 +45,17 @@ for i in npc_list:
             list1.append(image0)
         list0.append(list1)
     npc_images.append(list0)
-font = pygame.font.Font(None, 36)
+
+for i in range(len(data[str(floor) + "-floor"]["npc"])):
+    data[str(floor) + "-floor"]["npc"][i][3] = randint(1, len(npc_images))
+
+darken_surface = pygame.Surface((xx, yy))
+darken = False
+darken_time = 500
+darken_coef = 255//(darken_time//10)
+darken_num = 255
+font_36 = pygame.font.Font("PIXY.ttf", 36)
+font = pygame.font.Font("PIXY.ttf", 20)
 x_map = backdround_image.get_size()[0]
 y_map = backdround_image.get_size()[1]
 x = x_map//2
@@ -90,7 +109,7 @@ while True:
                             break
                     for i in range(len(data[str(floor) + "-floor"]["npc"])):
                         mouse_x, mouse_y = pygame.mouse.get_pos()
-                        if (((data[str(floor) + "-floor"]["npc"][i][0] + npc_images[0][0][0].get_size()[0]//2) - mouse_x - x + xx//2)**2 + ((data[str(floor) + "-floor"]["npc"][i][1] + npc_images[0][0][0].get_size()[1]//2) - mouse_y - y +yy//2)**2)**(1/2) <= 40:
+                        if (((data[str(floor) + "-floor"]["npc"][i][0]) - mouse_x - x + xx//2)**2 + ((data[str(floor) + "-floor"]["npc"][i][1]) - mouse_y - y +yy//2)**2)**(1/2) <= 40:
                             del data[str(floor) + "-floor"]["npc"][i]
                             break
                     for i in range(len(data[str(floor) + "-floor"]["rooms"])):
@@ -107,16 +126,16 @@ while True:
                 if mode == 1:
                     #data["1-floor"]["npc"].clear()
                     None
-            elif event.key == pygame.K_1 or event.key == pygame.K_2 or event.key == pygame.K_3 or event.key == pygame.K_4:
+            elif event.key == pygame.K_r or event.key == pygame.K_t or event.key == pygame.K_y or event.key == pygame.K_u:
                 if mode == 1:
                     direction = 1
-                    if event.key == pygame.K_2:
+                    if event.key == pygame.K_t:
                         direction = 2
-                    elif event.key == pygame.K_3:
+                    elif event.key == pygame.K_y:
                         direction = 3
-                    elif event.key == pygame.K_4:
+                    elif event.key == pygame.K_u:
                         direction = 4
-                    data["1-floor"]["npc"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, randint(1, len(npc_images)), direction, 1, randint(0, 1000), 1000])
+                    data["1-floor"]["npc"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, randint(1, len(npc_images)), direction, 1, randint(0, 1000), 1000, False, 0, 2000])
                     #print([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, randint(1, len(npc_images)), 1, 1])
             elif event.key == pygame.K_c:
                 if mode == 1:
@@ -129,14 +148,14 @@ while True:
             elif event.key == pygame.K_x:
                 if mode == 1:
                     print(pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2)
-            elif event.key == pygame.K_r or event.key == pygame.K_t or event.key == pygame.K_y or event.key == pygame.K_u:
+            elif event.key == pygame.K_1 or event.key == pygame.K_2 or event.key == pygame.K_3 or event.key == pygame.K_4:
                 if mode == 1:
                     floor_num = 1
-                    if event.key == pygame.K_t:
+                    if event.key == pygame.K_2:
                         floor_num = 2
-                    elif event.key == pygame.K_y:
+                    elif event.key == pygame.K_3:
                         floor_num = 3
-                    elif event.key == pygame.K_u:
+                    elif event.key == pygame.K_4:
                         floor_num = 4
                     floor = floor_num
                     backdround_image = pygame.image.load("images/floors/" + str(floor) + "-floor_kbtu.jpg")
@@ -259,13 +278,16 @@ while True:
             if y_prev + player_size > i[1] and y_prev - player_size < i[1] + i[3] and x_prev + player_size > i[0] and x_prev - player_size < i[0] + i[2]:
                 x_plus = False
     
-        for i in data[str(floor) + "-floor"]["npc"]:
-            if ((x - (i[0]+npc_images[0][0][0].get_size()[0]//2))**2 + (y - (i[1]+npc_images[0][0][0].get_size()[1]//2))**2)**(1/2) <= 40:
+        for i in range(len(data[str(floor) + "-floor"]["npc"])):
+            if ((x - (data[str(floor) + "-floor"]["npc"][i][0]))**2 + (y - (data[str(floor) + "-floor"]["npc"][i][1]))**2)**(1/2) <= 40:
                 x_ac*=-1
                 y_ac*=-1
+                data[str(floor) + "-floor"]["npc"][i][7] = True
+                data[str(floor) + "-floor"]["npc"][i][8] = 0
 
         for i in data[str(floor) + "-floor"]["stairs"]:
             if ((i[0] - x)**2 + (i[1] - y)**2)**(1/2) <= 50:
+                darken = True
                 floor+=i[4]
                 backdround_image = pygame.image.load("images/floors/" + str(floor) + "-floor_kbtu.jpg")
                 backdround_image = pygame.transform.scale(backdround_image, (12000, 12000))
@@ -273,8 +295,23 @@ while True:
                 x = i[2]
                 y = i[3]
 
-    
+    if darken:
+        if darken_num-darken_coef >= 0:
+            darken_num-=darken_coef
+        else:
+            darken_num = 255
+            darken = False
+
+    darken_surface.set_alpha(darken_num)
+    darken_surface.fill((0, 0, 0))
+
     for i in range(len(data[str(floor) + "-floor"]["npc"])):
+        if data[str(floor) + "-floor"]["npc"][i][8] < data[str(floor) + "-floor"]["npc"][i][9] and data[str(floor) + "-floor"]["npc"][i][7]:
+            data[str(floor) + "-floor"]["npc"][i][8]+=10
+        else:
+            data[str(floor) + "-floor"]["npc"][i][8] = 0
+            data[str(floor) + "-floor"]["npc"][i][7] = False
+
         if data[str(floor) + "-floor"]["npc"][i][5] >= data[str(floor) + "-floor"]["npc"][i][6]:
             if data[str(floor) + "-floor"]["npc"][i][4] == 1:
                 data[str(floor) + "-floor"]["npc"][i][4] = 4
@@ -305,25 +342,38 @@ while True:
             for i in data[str(floor) + "-floor"]["stairs"]:
                 pygame.draw.circle(screen, (255, 255, 0), (i[0]  - x + xx//2, i[1] - y + yy//2), 50)
             for i in data[str(floor) + "-floor"]["rooms"]:
-                text = font.render(str(i[0]), True, (255, 0 , 0))
+                text = font_36.render(str(i[0]), True, (255, 0 , 0))
                 text_rect = text.get_rect(center=(i[1]  - x + xx//2, i[2] - y + yy//2))
                 pygame.draw.circle(screen, (0, 255, 0), (i[1]  - x + xx//2, i[2] - y + yy//2), 50)
                 screen.blit(text, text_rect)
             for i in data[str(floor) + "-floor"]["blocks"]:
                 pygame.draw.rect(screen, (0, 255, 255), pygame.Rect(i[0] - x + xx//2, i[1] - y + yy//2, i[2], i[3]))
             for i in data[str(floor) + "-floor"]["npc"]:
-                pygame.draw.circle(screen, (0, 255, 0), ((i[0]+npc_images[0][0][0].get_size()[0]//2) - x + xx//2, (i[1]+npc_images[0][0][0].get_size()[1]//2) - y + yy//2), 40)
+                pygame.draw.circle(screen, (0, 255, 0), ((i[0]) - x + xx//2, (i[1]) - y + yy//2), 40)
             #screen.blit(npc_images[0][i[8][0]-1][i[8][1]-1], npc_rect)
             if mouse_hold:
                 pygame.draw.rect(screen, (0, 0, 255), pygame.Rect(min(x_mode_1, x_mode_2) - x + xx//2, min(y_mode_1, y_mode_2) - y + yy//2, abs(x_mode_1 - x_mode_2), abs(y_mode_1 - y_mode_2)))
             pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(xx//2 - player_size, yy//2 - player_size, 2*player_size+1, 2*player_size+1))
         for i in data[str(floor) + "-floor"]["npc"]:
             npc_rect = npc_images[i[2]-1][i[3]-1][i[4]-1].get_rect()
-            npc_rect.topleft = (i[0] - x + xx//2, i[1] - y + yy//2)
+            npc_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
             screen.blit(npc_images[i[2]-1][i[3]-1][i[4]-1], npc_rect)
+            if i[7] == True:
+                text = font.render("Watch where you're going!", True, (255, 255, 255))
+                text_rect = text.get_rect(center=(i[0]  - x + xx//2, i[1] - y + yy//2 - 70))
+                pygame.draw.rect(screen, (40, 40, 40), text_rect)
+                screen.blit(text, text_rect)
+        for i in data[str(floor) + "-floor"]["stairs"]:
+            arrow_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
+            if i[4] == 1:
+                screen.blit(arrow_up, arrow_rect)
+            else:
+                screen.blit(arrow_down, arrow_rect)
         player_rect = npc_images[0][player_animation[0]-1][player_animation[1]-1].get_rect()
         player_rect.center = (xx//2, yy//2)
         screen.blit(npc_images[0][player_animation[0]-1][player_animation[1]-1], player_rect)
+        if darken:
+            screen.blit(darken_surface, (0, 0))
         pygame.display.update()
         fps_tick0 = 0
     else:
