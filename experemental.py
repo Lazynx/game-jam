@@ -21,11 +21,15 @@ backdround_image = pygame.transform.scale(backdround_image, (12000, 12000))
 backdround_image_rect = backdround_image.get_rect()
 
 arrow_up = pygame.image.load("images/arrow_up.png")
-arrow_up = pygame.transform.scale(arrow_up, (arrow_up.get_size()[0]//6, arrow_up.get_size()[0]//6))
+arrow_up = pygame.transform.scale(arrow_up, (arrow_up.get_size()[0]//6, arrow_up.get_size()[1]//6))
 arrow_rect = arrow_up.get_rect()
 
 arrow_down = pygame.image.load("images/arrow_down.png")
-arrow_down = pygame.transform.scale(arrow_down, (arrow_down.get_size()[0]//5, arrow_down.get_size()[0]//5))
+arrow_down = pygame.transform.scale(arrow_down, (arrow_down.get_size()[0]//5, arrow_down.get_size()[1]//5))
+
+coke = pygame.image.load("images/coke.png")
+coke = pygame.transform.scale(coke, (coke.get_size()[0]//4.5, coke.get_size()[1]//4.5))
+coke_rect = coke.get_rect()
 
 character_size = 2
 npc_list0 = os.listdir("images/npc")
@@ -47,7 +51,7 @@ for i in npc_list:
     npc_images.append(list0)
 
 for i in range(len(data[str(floor) + "-floor"]["npc"])):
-    data[str(floor) + "-floor"]["npc"][i][3] = randint(1, len(npc_images))
+    data[str(floor) + "-floor"]["npc"][i][2] = randint(1, len(npc_images))
 
 darken_surface = pygame.Surface((xx, yy))
 darken = False
@@ -68,7 +72,8 @@ x_ac = 0
 y_ac = 0
 ac_slow = 0.7
 ac_speed = 0.5
-speed = 8
+speed0 = 6.5
+speed = speed0
 player_size = 30
 mode = 0
 x_mode_1 = int()
@@ -76,10 +81,32 @@ y_mode_1 = int()
 x_mode_2 = int()
 y_mode_2 = int()
 mouse_hold = False
+coke_time = 0
+
+def pause(data):
+    screen.fill((0, 0, 0))
+    pygame.display.update()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                for j in range(1, 5):
+                    for i in range(len(data[str(j) + "-floor"]["cokes"])):
+                        data[str(floor) + "-floor"]["cokes"][i][2] = True
+                with open("data.json", "w") as file:
+                    json.dump(data, file, indent=4)
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+
+        pygame.time.wait(10)
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            for j in range(1, 5):
+                for i in range(len(data[str(j) + "-floor"]["cokes"])):
+                    data[str(floor) + "-floor"]["cokes"][i][2] = True
             with open("data.json", "w") as file:
                 json.dump(data, file, indent=4)
             exit()
@@ -98,7 +125,7 @@ while True:
                     speed = 15
                 else:
                     mode = 0
-                    speed = 8
+                    speed = speed0
             elif event.key == pygame.K_q:
                 if mode == 1:
                     for i in range(len(data[str(floor) + "-floor"]["blocks"])):
@@ -121,6 +148,11 @@ while True:
                         mouse_x, mouse_y = pygame.mouse.get_pos()
                         if (((data[str(floor) + "-floor"]["stairs"][i][0]) - mouse_x - x + xx//2)**2 + ((data[str(floor) + "-floor"]["stairs"][i][1]) - mouse_y - y +yy//2)**2)**(1/2) <= 50:
                             del data[str(floor) + "-floor"]["stairs"][i]
+                            break
+                    for i in range(len(data[str(floor) + "-floor"]["cokes"])):
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        if (((data[str(floor) + "-floor"]["cokes"][i][0]) - mouse_x - x + xx//2)**2 + ((data[str(floor) + "-floor"]["cokes"][i][1]) - mouse_y - y +yy//2)**2)**(1/2) <= 40:
+                            del data[str(floor) + "-floor"]["cokes"][i]
                             break
             elif event.key == pygame.K_p:
                 if mode == 1:
@@ -145,9 +177,14 @@ while True:
             elif event.key == pygame.K_v:
                 if mode == 1:
                     data["1-floor"]["stairs"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, 0, 0, 1])
+            elif event.key == pygame.K_b:
+                if mode == 1:
+                    data["1-floor"]["cokes"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, True])
             elif event.key == pygame.K_x:
                 if mode == 1:
                     print(pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2)
+            elif event.key == pygame.K_ESCAPE:
+                pause(data)
             elif event.key == pygame.K_1 or event.key == pygame.K_2 or event.key == pygame.K_3 or event.key == pygame.K_4:
                 if mode == 1:
                     floor_num = 1
@@ -267,6 +304,13 @@ while True:
         else:
             player_animation[2] +=160
     
+    if coke_time:
+            if coke_time-10 > 0:
+                coke_time-=10
+            else:
+                coke_time = 0
+                speed = speed0
+
     if mode != 1:
         for i in data[str(floor) + "-floor"]["blocks"]:
             x_prev = x
@@ -294,6 +338,12 @@ while True:
                 backdround_image_rect = backdround_image.get_rect() 
                 x = i[2]
                 y = i[3]
+
+        for i in range(len(data[str(floor) + "-floor"]["cokes"])):
+            if ((x - (data[str(floor) + "-floor"]["cokes"][i][0]))**2 + (y - (data[str(floor) + "-floor"]["cokes"][i][1]))**2)**(1/2) <= 40 and data[str(floor) + "-floor"]["cokes"][i][2]:
+                speed = 11
+                coke_time += 10000
+                data[str(floor) + "-floor"]["cokes"][i][2] = False
 
     if darken:
         if darken_num-darken_coef >= 0:
@@ -350,25 +400,33 @@ while True:
                 pygame.draw.rect(screen, (0, 255, 255), pygame.Rect(i[0] - x + xx//2, i[1] - y + yy//2, i[2], i[3]))
             for i in data[str(floor) + "-floor"]["npc"]:
                 pygame.draw.circle(screen, (0, 255, 0), ((i[0]) - x + xx//2, (i[1]) - y + yy//2), 40)
+            for i in data[str(floor) + "-floor"]["cokes"]:
+                pygame.draw.circle(screen, (0, 255, 0), ((i[0]) - x + xx//2, (i[1]) - y + yy//2), 40)
             #screen.blit(npc_images[0][i[8][0]-1][i[8][1]-1], npc_rect)
             if mouse_hold:
                 pygame.draw.rect(screen, (0, 0, 255), pygame.Rect(min(x_mode_1, x_mode_2) - x + xx//2, min(y_mode_1, y_mode_2) - y + yy//2, abs(x_mode_1 - x_mode_2), abs(y_mode_1 - y_mode_2)))
             pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(xx//2 - player_size, yy//2 - player_size, 2*player_size+1, 2*player_size+1))
         for i in data[str(floor) + "-floor"]["npc"]:
-            npc_rect = npc_images[i[2]-1][i[3]-1][i[4]-1].get_rect()
-            npc_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
-            screen.blit(npc_images[i[2]-1][i[3]-1][i[4]-1], npc_rect)
-            if i[7] == True:
-                text = font.render("Watch where you're going!", True, (255, 255, 255))
-                text_rect = text.get_rect(center=(i[0]  - x + xx//2, i[1] - y + yy//2 - 70))
-                pygame.draw.rect(screen, (40, 40, 40), text_rect)
-                screen.blit(text, text_rect)
+            if x + xx//2 + 200 >= i[0] >= x - xx//2 - 200 and y + yy//2 + 200 >= i[1] >= y - yy//2 - 200:
+                npc_rect = npc_images[i[2]-1][i[3]-1][i[4]-1].get_rect()
+                npc_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
+                screen.blit(npc_images[i[2]-1][i[3]-1][i[4]-1], npc_rect)
+                if i[7] == True:
+                    text = font.render("Watch where you're going!", True, (255, 255, 255))
+                    text_rect = text.get_rect(center=(i[0]  - x + xx//2, i[1] - y + yy//2 - 70))
+                    pygame.draw.rect(screen, (40, 40, 40), text_rect)
+                    screen.blit(text, text_rect)
         for i in data[str(floor) + "-floor"]["stairs"]:
-            arrow_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
-            if i[4] == 1:
-                screen.blit(arrow_up, arrow_rect)
-            else:
-                screen.blit(arrow_down, arrow_rect)
+            if x + xx//2 + 200 >= i[0] >= x - xx//2 - 200 and y + yy//2 + 200 >= i[1] >= y - yy//2 - 200:
+                arrow_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
+                if i[4] == 1:
+                    screen.blit(arrow_up, arrow_rect)
+                else:
+                    screen.blit(arrow_down, arrow_rect)
+        for i in data[str(floor) + "-floor"]["cokes"]:
+            if x + xx//2 + 200 >= i[0] >= x - xx//2 - 200 and y + yy//2 + 200 >= i[1] >= y - yy//2 - 200 and i[2]:
+                coke_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
+                screen.blit(coke, coke_rect)
         player_rect = npc_images[0][player_animation[0]-1][player_animation[1]-1].get_rect()
         player_rect.center = (xx//2, yy//2)
         screen.blit(npc_images[0][player_animation[0]-1][player_animation[1]-1], player_rect)
