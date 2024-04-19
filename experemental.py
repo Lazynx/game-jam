@@ -31,6 +31,10 @@ coke = pygame.image.load("images/coke.png")
 coke = pygame.transform.scale(coke, (coke.get_size()[0]//4.5, coke.get_size()[1]//4.5))
 coke_rect = coke.get_rect()
 
+heart = pygame.image.load("images/heart.png")
+heart = pygame.transform.scale(heart, (heart.get_size()[0]//12, heart.get_size()[1]//12))
+heart_rect = heart.get_rect()
+
 character_size = 2
 npc_list0 = os.listdir("images/npc")
 npc_list = []
@@ -53,8 +57,16 @@ for i in npc_list:
 for i in range(len(data[str(floor) + "-floor"]["npc"])):
     data[str(floor) + "-floor"]["npc"][i][2] = randint(1, len(npc_images))
 
+level = 1
+lifes = 3
+level_1_timer = 120000
+level_2_timer = 70000
+level_3_timer = 5000
+level_4_timer = 5000
+target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
+timer = level_1_timer
 darken_surface = pygame.Surface((xx, yy))
-darken = False
+darken = True
 darken_time = 500
 darken_coef = 255//(darken_time//10)
 darken_num = 255
@@ -62,8 +74,8 @@ font_36 = pygame.font.Font("PIXY.ttf", 36)
 font = pygame.font.Font("PIXY.ttf", 20)
 x_map = backdround_image.get_size()[0]
 y_map = backdround_image.get_size()[1]
-x = x_map//2
-y = y_map//2
+x = 6004.592527820984 
+y = 9488.892630683886
 x_plus_move = False
 x_minus_move = False
 y_plus_move = False
@@ -106,7 +118,7 @@ while True:
         if event.type == pygame.QUIT:
             for j in range(1, 5):
                 for i in range(len(data[str(j) + "-floor"]["cokes"])):
-                    data[str(floor) + "-floor"]["cokes"][i][2] = True
+                    data[str(j) + "-floor"]["cokes"][i][2] = True
             with open("data.json", "w") as file:
                 json.dump(data, file, indent=4)
             exit()
@@ -167,19 +179,19 @@ while True:
                         direction = 3
                     elif event.key == pygame.K_u:
                         direction = 4
-                    data["1-floor"]["npc"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, randint(1, len(npc_images)), direction, 1, randint(0, 1000), 1000, False, 0, 2000])
+                    data[str(floor) + "-floor"]["npc"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, randint(1, len(npc_images)), direction, 1, randint(0, 1000), 1000, False, 0, 2000])
                     #print([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, randint(1, len(npc_images)), 1, 1])
             elif event.key == pygame.K_c:
                 if mode == 1:
                     print("Write number: ")
                     room = int(input())
-                    data["1-floor"]["rooms"].append([room, pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2])
+                    data[str(floor) + "-floor"]["rooms"].append([room, pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2])
             elif event.key == pygame.K_v:
                 if mode == 1:
-                    data["1-floor"]["stairs"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, 0, 0, 1])
+                    data[str(floor) + "-floor"]["stairs"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, 0, 0, 1])
             elif event.key == pygame.K_b:
                 if mode == 1:
-                    data["1-floor"]["cokes"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, True])
+                    data[str(floor) + "-floor"]["cokes"].append([pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2, True])
             elif event.key == pygame.K_x:
                 if mode == 1:
                     print(pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2)
@@ -253,6 +265,36 @@ while True:
 
     x_plus = True
     y_plus = True
+
+    if mode != 1:
+        if timer > 0:
+            timer-=13
+        else:
+            if lifes-1 != 0:
+                lifes-=1
+                darken = True
+                floor = 1
+                backdround_image = pygame.image.load("images/floors/" + str(floor) + "-floor_kbtu.jpg")
+                backdround_image = pygame.transform.scale(backdround_image, (12000, 12000))
+                backdround_image_rect = backdround_image.get_rect()
+                coke_time = 0
+                for j in range(1, 5):
+                    for i in range(len(data[str(j) + "-floor"]["cokes"])):
+                        data[str(floor) + "-floor"]["cokes"][i][2] = True
+                timer = level_1_timer
+                if level == 2:
+                    timer = level_2_timer
+                elif level == 3:
+                    timer = level_3_timer
+                elif level == 4:
+                    timer = level_4_timer
+                x = 6004.592527820984 
+                y = 9488.892630683886
+                x_plus_move = False
+                x_minus_move = False
+                y_plus_move = False
+                y_minus_move = False 
+
 
     if player_animation[2] >= player_animation[3]:
         if y_ac < 0:
@@ -344,6 +386,33 @@ while True:
                 speed = 11
                 coke_time += 10000
                 data[str(floor) + "-floor"]["cokes"][i][2] = False
+        
+        for i in data[str(floor) + "-floor"]["rooms"]:
+            if ((i[1] - x)**2 + (i[2] - y)**2)**(1/2) <= 50 and i[0] == target_room:
+                darken = True
+                floor = 1
+                backdround_image = pygame.image.load("images/floors/" + str(floor) + "-floor_kbtu.jpg")
+                backdround_image = pygame.transform.scale(backdround_image, (12000, 12000))
+                backdround_image_rect = backdround_image.get_rect()
+                for j in range(1, 5):
+                    for i in range(len(data[str(j) + "-floor"]["cokes"])):
+                        data[str(floor) + "-floor"]["cokes"][i][2] = True
+                level+=1
+                target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
+                timer = level_1_timer
+                coke_time = 0
+                if level == 2:
+                    timer = level_2_timer
+                elif level == 3:
+                    timer = level_3_timer
+                elif level == 4:
+                    timer = level_4_timer
+                x = 6004.592527820984 
+                y = 9488.892630683886
+                x_plus_move = False
+                x_minus_move = False
+                y_plus_move = False
+                y_minus_move = False    
 
     if darken:
         if darken_num-darken_coef >= 0:
@@ -430,6 +499,24 @@ while True:
         player_rect = npc_images[0][player_animation[0]-1][player_animation[1]-1].get_rect()
         player_rect.center = (xx//2, yy//2)
         screen.blit(npc_images[0][player_animation[0]-1][player_animation[1]-1], player_rect)
+        text = font_36.render("Target room: " + str(target_room) + "   Time: " + str(round(timer/1000)) + " sec", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(text.get_size()[0]//2, text.get_size()[1]//2))
+        pygame.draw.rect(screen, (40, 40, 40), text_rect)
+        screen.blit(text, text_rect)
+        coke_time_text = ""
+        if coke_time != 0:
+            coke_time_text = "   Speed: " + str(round(coke_time/1000)) + " sec"
+        text = font_36.render("level: " + str(level) + coke_time_text, True, (255, 255, 255))
+        text_rect = text.get_rect(center=(text.get_size()[0]//2, text.get_size()[1] + text.get_size()[1]//2))
+        pygame.draw.rect(screen, (40, 40, 40), text_rect)
+        screen.blit(text, text_rect)
+        text = font_36.render("Lifes: ", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(text.get_size()[0]//2, text.get_size()[1]*2 + text.get_size()[1]//2))
+        pygame.draw.rect(screen, (40, 40, 40), text_rect)
+        screen.blit(text, text_rect)
+        for i in range(lifes):
+            heart_rect.center = (150 + i*50,  text.get_size()[1]*2 + heart.get_size()[1]//2)
+            screen.blit(heart, heart_rect)
         if darken:
             screen.blit(darken_surface, (0, 0))
         pygame.display.update()
