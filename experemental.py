@@ -63,6 +63,17 @@ for i in npc_list:
 for i in range(len(data[str(floor) + "-floor"]["npc"])):
     data[str(floor) + "-floor"]["npc"][i][2] = randint(1, len(npc_images))
 
+for i in range(1, 5):
+    blocks_j = 0
+    blocks_num = len(data[str(i) + "-floor"]["blocks"])
+    while blocks_j < blocks_num:
+        if data[str(i) + "-floor"]["blocks"][ blocks_j][2] < 1 or data[str(i) + "-floor"]["blocks"][ blocks_j][3] < 1:
+            del data[str(i) + "-floor"]["blocks"][ blocks_j]
+            blocks_num-=1
+        else:
+            blocks_j+=1
+
+
 level = 1
 lifes = 3
 level_1_timer = 120000
@@ -90,7 +101,7 @@ x_ac = 0
 y_ac = 0
 ac_slow = 0.7
 ac_speed = 0.5
-speed0 = 6.5
+speed0 = 6
 speed = speed0
 player_size = 30
 mode = 0
