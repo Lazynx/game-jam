@@ -494,7 +494,7 @@ while True:
                 backdround_image_rect = backdround_image.get_rect()
                 for j in range(1, 5):
                     for i in range(len(data[str(j) + "-floor"]["cokes"])):
-                        data[str(floor) + "-floor"]["cokes"][i][2] = True
+                        data[str(j) + "-floor"]["cokes"][i][2] = True
                 target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
                 timer = level_1_timer
                 coke_time = 0
