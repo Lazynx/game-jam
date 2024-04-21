@@ -1,4 +1,4 @@
-# Don't be late
+## Don't be late
 
 ## Table of Contents
 1. [Introduction](#introduction)
