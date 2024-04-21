@@ -6,9 +6,6 @@
 3. [Usage](#usage)
 4. [Features](#features)
 5. [Dependencies](#dependencies)
-6. [Configuration](#configuration)
-7. [Documentation](#documentation)
-8. [Examples](#examples)
 
 ## Introduction
 **Don't be late** is an engaging and educational game built with Pygame, designed to help first-year students, applicants, and newcomers at KBTU familiarize themselves with the university's layout. Players navigate through various challenges to reach their classes on time, which in turn enhances their time-management skills and knowledge of the campus.
@@ -22,3 +19,23 @@ git clone https://github.com/your-github/game-jam.git
 
 # Install Pygame if you haven't already
 pip install pygame
+```
+
+## Usage
+
+To start playing Space Racer, run the following command in the terminal:
+```bash
+python main.py
+```
+
+## Features
+
+- ** Educational Gameplay: Learn the layout of KBTU while playing an enjoyable game.
+
+- ** Time Management Training: Develop better time-management skills as you navigate through the game.
+
+- ** Adaptive Challenges: The game increases in difficulty as your familiarity with the campus improves.
+
+## Dependencies
+- Python >= 3.0
+- Pygame
