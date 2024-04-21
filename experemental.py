@@ -12,7 +12,8 @@ yy = infoObject.current_h
 fps = 100
 fps_tick = 1000/fps
 fps_tick0 = 0
-screen = pygame.display.set_mode((xx, yy), pygame.FULLSCREEN)
+#pygame.FULLSCREEN
+screen = pygame.display.set_mode((xx, yy))
 file = open('data.json', 'r')
 data = json.loads(file.read())
 file.close()
@@ -27,7 +28,7 @@ arrow_up = pygame.transform.scale(arrow_up, (arrow_up.get_size()[0]//6, arrow_up
 arrow_rect = arrow_up.get_rect()
 
 arrow_down = pygame.image.load("images/arrow_down.png")
-arrow_down = pygame.transform.scale(arrow_down, (arrow_down.get_size()[0]//5, arrow_down.get_size()[1]//5))
+arrow_down = pygame.transform.scale(arrow_down, (arrow_down.get_size()[0]//6, arrow_down.get_size()[1]//6))
 
 coke = pygame.image.load("images/coke.png")
 coke = pygame.transform.scale(coke, (coke.get_size()[0]//4.5, coke.get_size()[1]//4.5))
@@ -212,7 +213,7 @@ while True:
             elif event.key == pygame.K_e:
                 if mode == 0:
                     mode = 1
-                    speed = 15
+                    speed = 30
                 else:
                     mode = 0
                     speed = speed0
@@ -584,7 +585,7 @@ while True:
         for i in data[str(floor) + "-floor"]["stairs"]:
             if x + xx//2 + 200 >= i[0] >= x - xx//2 - 200 and y + yy//2 + 200 >= i[1] >= y - yy//2 - 200:
                 arrow_rect.center = (i[0] - x + xx//2, i[1] - y + yy//2)
-                if i[4] == 1:
+                if i[4] != -1:
                     screen.blit(arrow_up, arrow_rect)
                 else:
                     screen.blit(arrow_down, arrow_rect)
