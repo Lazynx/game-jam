@@ -3,12 +3,13 @@ import pygame
 import sys
 import os
 import survey
+import Gaxgame
 from random import randint
 pygame.init()
 
 current_sprite = 0
 answer_rects = []
-
+SCORE = 0
 
 floor = 1
 infoObject = pygame.display.Info()
@@ -82,9 +83,9 @@ for i in range(1, 5):
 level = 1
 lifes = 3
 level_1_timer = 120000
-level_2_timer = 100000
-level_3_timer = 80000
-level_4_timer = 60000
+level_2_timer = 110000
+level_3_timer = 100000
+level_4_timer = 90000
 target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
 timer = level_1_timer
 darken_surface = pygame.Surface((xx, yy))
@@ -285,7 +286,7 @@ def transition(xx, yy, position, room, time):
             screen.blit(darken_surface, (0, 0))
         pygame.display.update()
         pygame.time.wait(10)
-
+#Gaxgame.gaxgame_game(screen, xx, yy)
 pause(data, xx, yy, 4)
 speak_sound.play()
 transition(xx, yy, 1, target_room, timer)
@@ -592,11 +593,13 @@ while True:
             if ((i[1] - x)**2 + (i[2] - y)**2)**(1/2) <= 50 and i[0] == target_room:
                 pygame.mixer.stop()
                 win_sound.play()
-                if level+1 == 3:
-                    survey.survey_game(screen)
                 if level+1 <= 4:
                     transition(xx, yy, 3, target_room, timer)
                     pause(data, xx, yy, 2)
+                    if level+1 == 3:
+                        survey.survey_game(screen)
+                    elif level+1 == 4:
+                        Gaxgame.gaxgame_game(screen, xx, yy)
                     level+=1
                 else:
                     transition(xx, yy, 5, target_room, timer)
