@@ -15,7 +15,7 @@ To install Don't be late, you'll need Python and Pygame installed on your comput
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-github/game-jam.git
+git clone https://github.com/Lazynx/game-jam.git
 
 # Install Pygame if you haven't already
 pip install pygame
