@@ -12,8 +12,7 @@ yy = infoObject.current_h
 fps = 100
 fps_tick = 1000/fps
 fps_tick0 = 0
-#pygame.FULLSCREEN
-screen = pygame.display.set_mode((xx, yy))
+screen = pygame.display.set_mode((xx, yy), pygame.FULLSCREEN)
 file = open('data.json', 'r')
 data = json.loads(file.read())
 file.close()
@@ -78,9 +77,9 @@ for i in range(1, 5):
 level = 1
 lifes = 3
 level_1_timer = 120000
-level_2_timer = 120000
-level_3_timer = 120000
-level_4_timer = 120000
+level_2_timer = 100000
+level_3_timer = 80000
+level_4_timer = 60000
 target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
 timer = level_1_timer
 darken_surface = pygame.Surface((xx, yy))
@@ -191,6 +190,86 @@ def pause(data, xx, yy, pause_mode):
             screen.blit(darken_surface, (0, 0))
         pygame.display.update()
         pygame.time.wait(10)
+
+def transition(xx, yy, position, room, time):
+    transition_time = 1500
+    transition_time_tick = 0
+    font = pygame.font.Font("PIXY.ttf", 60)
+    backdround = pygame.image.load("images/kbtu_room.jpg")
+    backdround = pygame.transform.scale(backdround, (backdround.get_size()[0]*yy//backdround.get_size()[1], yy))
+    backdround_rect = backdround.get_rect(center = (xx//2, yy//2))
+    teacher = pygame.image.load("images/teacher.png")
+    teacher = pygame.transform.scale(teacher, (teacher.get_size()[0]*1.5, teacher.get_size()[1]*1.5))
+    teacher_rect = teacher.get_rect(center = (xx//2, yy - teacher.get_size()[1]//2))
+    darken_surface = pygame.Surface((xx, yy))
+    darken = True
+    darken_time = 500
+    darken_coef = 255//(darken_time//10)
+    darken_num = 255
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                for j in range(1, 5):
+                    for i in range(len(data[str(j) + "-floor"]["cokes"])):
+                        data[str(j) + "-floor"]["cokes"][i][2] = True
+                with open("data.json", "w") as file:
+                    json.dump(data, file, indent=4)
+                exit()
+        if darken:
+            if darken_num-darken_coef >= 0:
+                darken_num-=darken_coef
+            else:
+                darken_num = 255
+                darken = False
+
+        darken_surface.set_alpha(darken_num)
+        darken_surface.fill((0, 0, 0))
+
+        screen.fill((0, 0, 0))
+        screen.blit(backdround, backdround_rect)
+        if position == 1:
+            text = font.render("Don't be late!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+            text = font.render("The lesson will be in room " + str(room) + " in " + str(round(time/1000)) + " seconds", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 100))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+        elif position == 2:
+            text = font.render("Don't be late anymore!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+        elif position == 3:
+            text = font.render("Good job!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+        elif position == 4:
+            text = font.render("Go for a retake!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+        elif position == 5:
+            text = font.render("Your GPA is 4.0!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+        screen.blit(text, text_rect)
+        screen.blit(teacher, teacher_rect)
+
+        if transition_time_tick < transition_time:
+            transition_time_tick+=10
+        else:
+            return
+
+        if darken:
+            screen.blit(darken_surface, (0, 0))
+        pygame.display.update()
+        pygame.time.wait(10)
+
+pause(data, xx, yy, 4)
+transition(xx, yy, 1, target_room, timer)
 
 while True:
     for event in pygame.event.get():
@@ -355,9 +434,11 @@ while True:
             timer-=13
         else:
             if lifes-1 != 0:
+                transition(xx, yy, 2, target_room, timer)
                 pause(data, xx, yy, 3)
                 lifes-=1
             else:
+                transition(xx, yy, 4, target_room, timer)
                 pause(data, xx, yy, 4)
                 level = 1
                 lifes = 3
@@ -370,8 +451,10 @@ while True:
             coke_time = 0
             for j in range(1, 5):
                 for i in range(len(data[str(j) + "-floor"]["cokes"])):
-                    data[str(floor) + "-floor"]["cokes"][i][2] = True
+                    data[str(j) + "-floor"]["cokes"][i][2] = True
+            target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
             timer = level_1_timer
+            transition(xx, yy, 1, target_room, timer)
             if level == 2:
                 timer = level_2_timer
             elif level == 3:
@@ -480,9 +563,11 @@ while True:
         for i in data[str(floor) + "-floor"]["rooms"]:
             if ((i[1] - x)**2 + (i[2] - y)**2)**(1/2) <= 50 and i[0] == target_room:
                 if level+1 <= 4:
+                    transition(xx, yy, 3, target_room, timer)
                     pause(data, xx, yy, 2)
                     level+=1
                 else:
+                    transition(xx, yy, 5, target_room, timer)
                     pause(data, xx, yy, 4)
                     level = 1
                     lifes = 3
@@ -497,6 +582,7 @@ while True:
                         data[str(j) + "-floor"]["cokes"][i][2] = True
                 target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
                 timer = level_1_timer
+                transition(xx, yy, 1, target_room, timer)
                 coke_time = 0
                 if level == 2:
                     timer = level_2_timer
