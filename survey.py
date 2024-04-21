@@ -165,7 +165,7 @@ while running:
                 selected_answer = None
                 if current_question >= len(selected_questions):
                     show_results()
-                    running = False
+                    exit()
                 else:
                     display_question()
 

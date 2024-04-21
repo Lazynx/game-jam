@@ -39,7 +39,7 @@ heart_rect = heart.get_rect()
 
 bag = pygame.image.load("images/bag.png")
 bag = pygame.transform.scale(bag, (bag.get_size()[0]//1, bag.get_size()[1]//1))
-bag_rect = bag.get_rect(topleft = (-150 + shift, -300 + shift//2))
+bag_rect = bag.get_rect(topleft = (-150 + shift, -270 + shift//2))
 
 character_size = 2
 npc_list0 = os.listdir("images/npc")
@@ -111,8 +111,16 @@ x_mode_2 = int()
 y_mode_2 = int()
 mouse_hold = False
 coke_time = 0
+win_sound = pygame.mixer.Sound("sounds/win.mp3")
+loss_sound = pygame.mixer.Sound("sounds/loss.mp3")
+main_game_sound = pygame.mixer.Sound("sounds/main_game.mp3")
+ough_sound = pygame.mixer.Sound("sounds/ough.mp3")
+coke_sound = pygame.mixer.Sound("sounds/coke.mp3")
+speak_sound = pygame.mixer.Sound("sounds/speak.mp3")
 
 def pause(data, xx, yy, pause_mode):
+    pause_sound = pygame.mixer.Sound("sounds/pause.mp3")
+    pause_sound.play(-1)
     font = pygame.font.Font("PIXY.ttf", 120)
     backdround = pygame.image.load("images/menu_background.jpg")
     backdround = pygame.transform.scale(backdround, (backdround.get_size()[0]*yy//backdround.get_size()[1], yy))
@@ -127,12 +135,13 @@ def pause(data, xx, yy, pause_mode):
             if event.type == pygame.QUIT:
                 for j in range(1, 5):
                     for i in range(len(data[str(j) + "-floor"]["cokes"])):
-                        data[str(floor) + "-floor"]["cokes"][i][2] = True
+                        data[str(j) + "-floor"]["cokes"][i][2] = True
                 with open("data.json", "w") as file:
                     json.dump(data, file, indent=4)
                 exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    pygame.mixer.stop()
                     return
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 text = font.render("Quit", True, (255, 255, 255))
@@ -140,7 +149,7 @@ def pause(data, xx, yy, pause_mode):
                     if xx//2 + text.get_size()[0]//2 >= pygame.mouse.get_pos()[0] >= xx//2 - text.get_size()[0]//2 and yy//4*3 + text.get_size()[1]//2 >= pygame.mouse.get_pos()[1] >= yy//4*3 - text.get_size()[1]//2:
                         for j in range(1, 5):
                             for i in range(len(data[str(j) + "-floor"]["cokes"])):
-                                data[str(floor) + "-floor"]["cokes"][i][2] = True
+                                data[str(j) + "-floor"]["cokes"][i][2] = True
                             with open("data.json", "w") as file:
                                 json.dump(data, file, indent=4)
                         exit()
@@ -153,6 +162,7 @@ def pause(data, xx, yy, pause_mode):
                     elif pause_mode == 4:
                         text = font.render("New game", True, (255, 255, 255))
                     if xx//2 + text.get_size()[0]//2 >= pygame.mouse.get_pos()[0] >= xx//2 - text.get_size()[0]//2 and yy//4*2 + text.get_size()[1]//2 >= pygame.mouse.get_pos()[1] >= yy//4*2 - text.get_size()[1]//2:
+                        pygame.mixer.stop()
                         return
 
         if darken:
@@ -192,7 +202,9 @@ def pause(data, xx, yy, pause_mode):
         pygame.time.wait(10)
 
 def transition(xx, yy, position, room, time):
-    transition_time = 1500
+    transition_time = 3000
+    if position == 1:
+        transition_time = 1500
     transition_time_tick = 0
     font = pygame.font.Font("PIXY.ttf", 60)
     backdround = pygame.image.load("images/kbtu_room.jpg")
@@ -269,7 +281,9 @@ def transition(xx, yy, position, room, time):
         pygame.time.wait(10)
 
 pause(data, xx, yy, 4)
+speak_sound.play()
 transition(xx, yy, 1, target_room, timer)
+main_game_sound.play(-1)
 
 while True:
     for event in pygame.event.get():
@@ -354,7 +368,9 @@ while True:
                 if mode == 1:
                     print(pygame.mouse.get_pos()[0] + x - xx//2, pygame.mouse.get_pos()[1] + y - yy//2)
             elif event.key == pygame.K_ESCAPE:
+                pygame.mixer.stop()
                 pause(data, xx, yy, 1)
+                main_game_sound.play(-1)
                 darken = True
                 x_plus_move = False
                 x_minus_move = False
@@ -433,6 +449,8 @@ while True:
         if timer > 0:
             timer-=13
         else:
+            pygame.mixer.stop()
+            loss_sound.play()
             if lifes-1 != 0:
                 transition(xx, yy, 2, target_room, timer)
                 pause(data, xx, yy, 3)
@@ -454,13 +472,15 @@ while True:
                     data[str(j) + "-floor"]["cokes"][i][2] = True
             target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
             timer = level_1_timer
-            transition(xx, yy, 1, target_room, timer)
             if level == 2:
                 timer = level_2_timer
             elif level == 3:
                 timer = level_3_timer
             elif level == 4:
                 timer = level_4_timer
+            speak_sound.play()
+            transition(xx, yy, 1, target_room, timer)
+            main_game_sound.play(-1)
             x = 6004.592527820984 
             y = 9488.892630683886
             x_plus_move = False
@@ -541,6 +561,7 @@ while True:
             if ((x - (data[str(floor) + "-floor"]["npc"][i][0]))**2 + (y - (data[str(floor) + "-floor"]["npc"][i][1]))**2)**(1/2) <= 40:
                 x_ac*=-1
                 y_ac*=-1
+                ough_sound.play()
                 data[str(floor) + "-floor"]["npc"][i][7] = True
                 data[str(floor) + "-floor"]["npc"][i][8] = 0
 
@@ -559,9 +580,12 @@ while True:
                 speed = 11
                 coke_time += 10000
                 data[str(floor) + "-floor"]["cokes"][i][2] = False
+                coke_sound.play()
         
         for i in data[str(floor) + "-floor"]["rooms"]:
             if ((i[1] - x)**2 + (i[2] - y)**2)**(1/2) <= 50 and i[0] == target_room:
+                pygame.mixer.stop()
+                win_sound.play()
                 if level+1 <= 4:
                     transition(xx, yy, 3, target_room, timer)
                     pause(data, xx, yy, 2)
@@ -582,7 +606,6 @@ while True:
                         data[str(j) + "-floor"]["cokes"][i][2] = True
                 target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
                 timer = level_1_timer
-                transition(xx, yy, 1, target_room, timer)
                 coke_time = 0
                 if level == 2:
                     timer = level_2_timer
@@ -590,6 +613,9 @@ while True:
                     timer = level_3_timer
                 elif level == 4:
                     timer = level_4_timer
+                speak_sound.play()
+                transition(xx, yy, 1, target_room, timer)
+                main_game_sound.play(-1)
                 x = 6004.592527820984 
                 y = 9488.892630683886
                 x_plus_move = False
@@ -681,7 +707,7 @@ while True:
                 screen.blit(coke, coke_rect)
         player_rect = npc_images[0][player_animation[0]-1][player_animation[1]-1].get_rect()
         player_rect.center = (xx//2, yy//2)
-        screen.blit(npc_images[0][player_animation[0]-1][player_animation[1]-1], player_rect)
+        screen.blit(npc_images[2][player_animation[0]-1][player_animation[1]-1], player_rect)
         screen.blit(bag, bag_rect)
 
         text = font_36.render("Target room: " + str(target_room), True, (0, 0, 0))
@@ -689,28 +715,33 @@ while True:
         #pygame.draw.rect(screen, (40, 40, 40), text_rect)
         screen.blit(text, text_rect)
 
-        text = font_36.render("Time: " + str(round(timer/1000)) + " sec", True, (0, 0, 0))
+        text = font_36.render("Current floor: " + str(floor), True, (0, 0, 0))
         text_rect = text.get_rect(center=(text.get_size()[0]//2  + shift, text.get_size()[1] + text.get_size()[1]//2  + shift//2))
         #pygame.draw.rect(screen, (40, 40, 40), text_rect)
         screen.blit(text, text_rect)
 
-        text = font_36.render("level: " + str(level), True, (0, 0, 0))
+        text = font_36.render("Time: " + str(round(timer/1000)) + " sec", True, (0, 0, 0))
         text_rect = text.get_rect(center=(text.get_size()[0]//2  + shift, text.get_size()[1]*2 + text.get_size()[1]//2  + shift//2))
         #pygame.draw.rect(screen, (40, 40, 40), text_rect)
         screen.blit(text, text_rect)
 
-        text = font_36.render("Lifes: ", True, (0, 0, 0))
+        text = font_36.render("level: " + str(level), True, (0, 0, 0))
         text_rect = text.get_rect(center=(text.get_size()[0]//2  + shift, text.get_size()[1]*3 + text.get_size()[1]//2  + shift//2))
         #pygame.draw.rect(screen, (40, 40, 40), text_rect)
         screen.blit(text, text_rect)
 
+        text = font_36.render("Lifes: ", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(text.get_size()[0]//2  + shift, text.get_size()[1]*4 + text.get_size()[1]//2  + shift//2))
+        #pygame.draw.rect(screen, (40, 40, 40), text_rect)
+        screen.blit(text, text_rect)
+
         for i in range(lifes):
-            heart_rect.center = (150 + i*50  + shift,  text.get_size()[1]*3 + heart.get_size()[1]//2  + shift//2)
+            heart_rect.center = (150 + i*50  + shift,  text.get_size()[1]*4 + heart.get_size()[1]//2  + shift//2)
             screen.blit(heart, heart_rect)
 
         if coke_time:
             text = font_36.render("Speed: " + str(round(coke_time/1000)) + " sec", True, (0, 0, 0))
-            text_rect = text.get_rect(center=(text.get_size()[0]//2  + shift, text.get_size()[1]*3 + text.get_size()[1]//2 + heart.get_size()[1]  + shift//2))
+            text_rect = text.get_rect(center=(text.get_size()[0]//2  + shift, text.get_size()[1]*4 + text.get_size()[1]//2 + heart.get_size()[1]  + shift//2))
             #pygame.draw.rect(screen, (40, 40, 40), text_rect)
             screen.blit(text, text_rect)
 
