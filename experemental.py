@@ -2,8 +2,13 @@ import json
 import pygame
 import sys
 import os
+import survey
 from random import randint
 pygame.init()
+
+current_sprite = 0
+answer_rects = []
+
 
 floor = 1
 infoObject = pygame.display.Info()
@@ -117,6 +122,7 @@ main_game_sound = pygame.mixer.Sound("sounds/main_game.mp3")
 ough_sound = pygame.mixer.Sound("sounds/ough.mp3")
 coke_sound = pygame.mixer.Sound("sounds/coke.mp3")
 speak_sound = pygame.mixer.Sound("sounds/speak.mp3")
+
 
 def pause(data, xx, yy, pause_mode):
     pause_sound = pygame.mixer.Sound("sounds/pause.mp3")
@@ -586,6 +592,8 @@ while True:
             if ((i[1] - x)**2 + (i[2] - y)**2)**(1/2) <= 50 and i[0] == target_room:
                 pygame.mixer.stop()
                 win_sound.play()
+                if level+1 == 3:
+                    survey.survey_game(screen)
                 if level+1 <= 4:
                     transition(xx, yy, 3, target_room, timer)
                     pause(data, xx, yy, 2)
