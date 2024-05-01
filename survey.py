@@ -3,7 +3,7 @@ import sys
 import random
 
 pygame.init()
-def survey_game(screen):
+def survey_game(screen, mode):
     window_width, window_height = screen.get_size()
 
     background_image = pygame.image.load('images/background/survey-bg.jpeg')
@@ -12,6 +12,9 @@ def survey_game(screen):
     font = pygame.font.Font("PIXY.ttf", 36)
     big_font = pygame.font.Font("PIXY.ttf", 42)
 
+    survey_music = pygame.mixer.Sound("sounds/survey.mp3")
+    survey_music.play(-1)
+
     sprite_images = ["images/npc/1/1/1.PNG", "images/npc/1/1/4.PNG"]
     sprites = [pygame.image.load(img) for img in sprite_images]
     global current_sprite
@@ -19,42 +22,93 @@ def survey_game(screen):
     sprite_change_speed = 100
 
     questions = [
-        {"question": "Как закрыть Pygame окно?",
-        "answers": ["quit()", "exit()", "close()"],
-        "correct": 0},
-        {"question": "Что возвращает pygame.mouse.get_pos()?",
-        "answers": ["Список", "Тапл", "Словарь"],
+        {"question": "What does the len() function do in Python?",
+        "answers": ["Deletes the object", "Returns the number of elements", "Copies the object"],
         "correct": 1},
-        {"question": "Как заполнить экран цветом?",
-        "answers": ["fill()", "paint()", "cover()"],
-        "correct": 0},
-        {"question": "Для чего pygame.mixer?",
-        "answers": ["Звук", "Изображения", "События"],
-        "correct": 0},
-        {"question": "Как проверить нажатие клавиши?",
-        "answers": ["pressed()", "down()", "hit()"],
-        "correct": 0},
-        {"question": "Как ограничить FPS?",
-        "answers": ["delay()", "wait()", "tick()"],
+        {"question": "How to create an empty list in Python?",
+        "answers": ["my_list = {}", "my_list = ()", "my_list = []"],
         "correct": 2},
-        {"question": "Что делает pygame.Surface?",
-        "answers": ["Рисует", "Создаёт", "Загружает"],
+        {"question": "Which method is used to concatenate strings in Python?",
+        "answers": ["+ operator", "concat()", "join()"],
+        "correct": 2},
+        {"question": "What keyword is used to define a function in Python?",
+        "answers": ["function", "def", "create"],
         "correct": 1},
-        {"question": "Что из этого цикл игры?",
-        "answers": ["loop()", "cycle()", "main()"],
-        "correct": 0},
-        {"question": "Какой метод рисует прямоугольник?",
-        "answers": ["draw.rect()", "draw.square()", "draw.box()"],
-        "correct": 0},
-        {"question": "Как запустить Pygame?",
-        "answers": ["begin()", "init()", "start()"],
+        {"question": "What is if in Python?",
+        "answers": ["Loop", "Function", "Conditional statement"],
+        "correct": 2},
+        {"question": "How to convert a string to a number in Python?",
+        "answers": ["float()", "int()", "str()"],
         "correct": 1}
     ]
+    if mode == 2:
+        questions = [
+            {"question": "How to create a new Pygame window?",
+            "answers": ["pygame.display.set_mode()", "pygame.init()", "pygame.window()"],
+            "correct": 0},
+            {"question": "Which function is used to load images in Pygame?",
+            "answers": ["pygame.load_image()", "pygame.image.load()", "pygame.load()"],
+            "correct": 1},
+            {"question": "What is the name of the module for working with sound in Pygame?",
+            "answers": ["pygame.mixer", "pygame.sound", "pygame.audio"],
+            "correct": 0},
+            {"question": "What is the name of the function to draw a rectangle in Pygame?",
+            "answers": ["pygame.draw.rect()", "pygame.draw.rectangle()", "pygame.draw_square()"],
+            "correct": 0},
+            {"question": "What is the name of the function to limit FPS in Pygame?",
+            "answers": ["pygame.fps_limit()", "pygame.delay()", "pygame.time.Clock()"],
+            "correct": 2}
+        ]
+    elif mode == 3:
+        questions = [
+            {"question": "How to properly close a Pygame window?",
+            "answers": ["pygame.quit() and sys.exit()", "exit()", "close()"],
+            "correct": 0},
+            {"question": "What does pygame.mouse.get_pos() return?",
+            "answers": ["List", "Tuple", "Dictionary"],
+            "correct": 1},
+            {"question": "How to fill the screen with color in Pygame?",
+            "answers": ["screen.fill(color)", "screen.paint(color)", "screen.cover(color)"],
+            "correct": 0},
+            {"question": "What is pygame.mixer used for?",
+            "answers": ["Sound", "Images", "Events"],
+            "correct": 0},
+            {"question": "How to check for key presses in Pygame?",
+            "answers": ["pygame.key.get_pressed()", "pygame.key.down()", "pygame.key.hit()"],
+            "correct": 0},
+            {"question": "How to limit FPS in Pygame?",
+            "answers": ["delay()", "wait()", "tick()"],
+            "correct": 2},
+            {"question": "What does pygame.Surface do?",
+            "answers": ["Draws", "Creates", "Loads"],
+            "correct": 1}
+        ]
+    elif mode == 4:
+        questions = [
+            {"question": "How to check if an element belongs to a list in Python?",
+            "answers": ["contains", "in", "belongsto"],
+            "correct": 1},
+            {"question": "What is for in Python?",
+            "answers": ["Conditional operator", "Loop", "Function"],
+            "correct": 1},
+            {"question": "What is the function used to load fonts in Pygame?",
+            "answers": ["pygame.font.Font()", "pygame.font.SysFont()", "pygame.load.font()"],
+            "correct": 0},
+            {"question": "Which of the following can be used to implement a game loop in Pygame?",
+            "answers": ["While loop", "For loop", "Function loop"],
+            "correct": 0},
+            {"question": "Which method draws a rectangle in Pygame?",
+            "answers": ["pygame.draw.rect()", "pygame.draw.square()", "pygame.draw.box()"],
+            "correct": 0},
+            {"question": "How to start Pygame?",
+            "answers": ["begin()", "init()", "start()"],
+            "correct": 1}
+        ]
 
     selected_questions = random.sample(questions, 3)
     current_question = 0
     selected_answer = None
-    correct_answers = 0
+    correct_answers = int(0)
     global answer_rects
     answer_rects = []
 
@@ -118,7 +172,7 @@ def survey_game(screen):
         else:
             border_color = (255, 0, 0)
 
-        results_text = font.render(f"Вы ответили правильно на {correct_answers} из 3 вопросов.", True, (0, 0, 0))
+        results_text = font.render(f"You answered {correct_answers} out of 3 questions correctly.", True, (0, 0, 0))
 
         text_background = pygame.Surface((results_text.get_width() + 20, results_text.get_height() + 20))
         text_background.fill((255, 255, 255))  # White background
@@ -130,7 +184,6 @@ def survey_game(screen):
 
         pygame.display.flip()
         pygame.time.wait(5000)
-
 
     display_question()
 
@@ -153,8 +206,8 @@ def survey_game(screen):
                         current_question += 1
                         if current_question >= len(selected_questions):
                             show_results()
-                            return
-                            running = False
+                            pygame.mixer.stop()
+                            return int(correct_answers)
                         else:
                             selected_answer = None
                             display_question()
@@ -166,12 +219,10 @@ def survey_game(screen):
                     selected_answer = None
                     if current_question >= len(selected_questions):
                         show_results()
-                        return
+                        pygame.mixer.stop()
+                        return int(correct_answers)
                     else:
                         display_question()
 
         display_question()
         pygame.display.flip()
-
-    pygame.quit()
-    sys.exit()

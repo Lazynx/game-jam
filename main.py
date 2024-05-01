@@ -4,6 +4,8 @@ import sys
 import os
 import survey
 import Gaxgame
+from pygame.locals import *
+import time
 from random import randint
 pygame.init()
 
@@ -15,7 +17,7 @@ floor = 1
 infoObject = pygame.display.Info()
 xx = infoObject.current_w
 yy = infoObject.current_h
-fps = 100
+fps = 200
 fps_tick = 1000/fps
 fps_tick0 = 0
 screen = pygame.display.set_mode((xx, yy), pygame.FULLSCREEN)
@@ -66,8 +68,9 @@ for i in npc_list:
         list0.append(list1)
     npc_images.append(list0)
 
-for i in range(len(data[str(floor) + "-floor"]["npc"])):
-    data[str(floor) + "-floor"]["npc"][i][2] = randint(1, len(npc_images))
+for j in range(1, 5):
+    for i in range(len(data[str(j) + "-floor"]["npc"])):
+        data[str(j) + "-floor"]["npc"][i][2] = randint(1, len(npc_images))
 
 for i in range(1, 5):
     blocks_j = 0
@@ -83,9 +86,9 @@ for i in range(1, 5):
 level = 1
 lifes = 3
 level_1_timer = 120000
-level_2_timer = 110000
-level_3_timer = 100000
-level_4_timer = 90000
+level_2_timer = 100000
+level_3_timer = 80000
+level_4_timer = 60000
 target_room = data[str(level) + "-floor"]["rooms"][randint(0, len(data[str(level) + "-floor"]["rooms"])-1)][0]
 timer = level_1_timer
 darken_surface = pygame.Surface((xx, yy))
@@ -117,6 +120,7 @@ x_mode_2 = int()
 y_mode_2 = int()
 mouse_hold = False
 coke_time = 0
+answers_score = 0
 win_sound = pygame.mixer.Sound("sounds/win.mp3")
 loss_sound = pygame.mixer.Sound("sounds/loss.mp3")
 main_game_sound = pygame.mixer.Sound("sounds/main_game.mp3")
@@ -210,7 +214,7 @@ def pause(data, xx, yy, pause_mode):
 
 def transition(xx, yy, position, room, time):
     transition_time = 3000
-    if position == 1:
+    if position == 1 or position == 6 or position == 7:
         transition_time = 1500
     transition_time_tick = 0
     font = pygame.font.Font("PIXY.ttf", 60)
@@ -220,7 +224,12 @@ def transition(xx, yy, position, room, time):
     teacher = pygame.image.load("images/teacher.png")
     teacher = pygame.transform.scale(teacher, (teacher.get_size()[0]*1.5, teacher.get_size()[1]*1.5))
     teacher_rect = teacher.get_rect(center = (xx//2, yy - teacher.get_size()[1]//2))
+    student = pygame.image.load("images/npc/1/1/1.PNG")
+    student = pygame.transform.scale(student, (student.get_size()[0]*2.5, student.get_size()[1]*2.5))
+    student_rect = student.get_rect(center = (xx//2, yy - student.get_size()[1]//2))
     darken_surface = pygame.Surface((xx, yy))
+    global answers_score
+    global data
     darken = True
     darken_time = 500
     darken_coef = 255//(darken_time//10)
@@ -254,6 +263,7 @@ def transition(xx, yy, position, room, time):
             text = font.render("The lesson will be in room " + str(room) + " in " + str(round(time/1000)) + " seconds", True, (255, 255, 255))
             text_rect = text.get_rect(center=(xx//2, 100))
             pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
         elif position == 2:
             text = font.render("Don't be late anymore!", True, (255, 255, 255))
             text_rect = text.get_rect(center=(xx//2, 200))
@@ -270,12 +280,39 @@ def transition(xx, yy, position, room, time):
             pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
             screen.blit(text, text_rect)
         elif position == 5:
-            text = font.render("Your GPA is 4.0!", True, (255, 255, 255))
+            gpa = round(4*answers_score/18, 1)
+            if gpa >= data["records"]:
+                text = font.render("Your GPA is " + str(gpa) +". It's the best result", True, (255, 255, 255))
+                data["records"] = gpa
+            else:
+                text = font.render("Your GPA is " + str(gpa) +". The best result: " + str(data["records"]), True, (255, 255, 255))
             text_rect = text.get_rect(center=(xx//2, 200))
             pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
             screen.blit(text, text_rect)
-        screen.blit(text, text_rect)
-        screen.blit(teacher, teacher_rect)
+        elif position == 6:
+            text = font.render("Quiz time. All phones in backpacks!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+        elif position == 7:
+            text = font.render("It's time for the final exam. Good luck!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+        elif position == 8:
+            text = font.render("Now it's time for relaxation :)", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 200))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+            text = font.render("The session is finally over!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(xx//2, 100))
+            pygame.draw.rect(screen, (40, 40, 40), text_rect, border_radius = 40)
+            screen.blit(text, text_rect)
+        
+        if position == 8:
+            screen.blit(student, student_rect)
+        else:
+            screen.blit(teacher, teacher_rect)
 
         if transition_time_tick < transition_time:
             transition_time_tick+=10
@@ -286,7 +323,8 @@ def transition(xx, yy, position, room, time):
             screen.blit(darken_surface, (0, 0))
         pygame.display.update()
         pygame.time.wait(10)
-#Gaxgame.gaxgame_game(screen, xx, yy)
+        
+#Gaxgame.gaxgame_game(screen)
 pause(data, xx, yy, 4)
 speak_sound.play()
 transition(xx, yy, 1, target_room, timer)
@@ -465,6 +503,7 @@ while True:
             else:
                 transition(xx, yy, 4, target_room, timer)
                 pause(data, xx, yy, 4)
+                answers_score = 0
                 level = 1
                 lifes = 3
             darken = True
@@ -592,18 +631,34 @@ while True:
         for i in data[str(floor) + "-floor"]["rooms"]:
             if ((i[1] - x)**2 + (i[2] - y)**2)**(1/2) <= 50 and i[0] == target_room:
                 pygame.mixer.stop()
-                win_sound.play()
                 if level+1 <= 4:
+                    if level+1 == 2:
+                        speak_sound.play()
+                        transition(xx, yy, 6, target_room, timer)
+                        answers_score += survey.survey_game(screen, 1)
+                    if level+1 == 3:
+                        speak_sound.play()
+                        transition(xx, yy, 6, target_room, timer)
+                        answers_score += survey.survey_game(screen, 2)
+                    elif level+1 == 4:
+                        speak_sound.play()
+                        transition(xx, yy, 6, target_room, timer)
+                        answers_score += survey.survey_game(screen, 3)
+                    win_sound.play()
                     transition(xx, yy, 3, target_room, timer)
                     pause(data, xx, yy, 2)
-                    if level+1 == 3:
-                        survey.survey_game(screen)
-                    elif level+1 == 4:
-                        Gaxgame.gaxgame_game(screen, xx, yy)
                     level+=1
                 else:
+                    speak_sound.play()
+                    transition(xx, yy, 7, target_room, timer)
+                    answers_score += survey.survey_game(screen, 4)*3
+                    win_sound.play()
                     transition(xx, yy, 5, target_room, timer)
+                    speak_sound.play()
+                    transition(xx, yy, 8, target_room, timer)
+                    Gaxgame.gaxgame_game(screen)
                     pause(data, xx, yy, 4)
+                    answers_score = 0
                     level = 1
                     lifes = 3
                 darken = True
