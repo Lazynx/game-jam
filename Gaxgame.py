@@ -114,10 +114,21 @@ def gaxgame_game(screen):
     to_begin = 0
 
     god_mode = True
-    
-    instructions_time = 3000
-    instructions_time0 = 0
 
+    def instructions_show():
+        instructions_time = 2500
+        instructions_time0 = 0
+        while instructions_time0 < instructions_time:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+            screen.blit(instructions_background, (0,0))
+            pygame.display.update()
+            pygame.time.wait(10)
+            instructions_time0+=10
+        return
+
+    instructions_show()
     while run:
         for event in pygame.event.get():
             if event.type == INC_SPEED:
@@ -174,7 +185,7 @@ def gaxgame_game(screen):
             time.sleep(0.2)
             screen.fill((255, 0, 0))
             screen.blit(loser,(SCREEN_WIDTH//2 - loser.get_size()[0]//2, SCREEN_HEIGHT//2 - loser.get_size()[0]//2))
-            screen.blit(border_image, border_image.get_rect())
+            #screen.blit(border_image, border_image.get_rect())
             pygame.display.update()
             for entity in all_sprites:
                 entity.kill()
@@ -207,12 +218,12 @@ def gaxgame_game(screen):
             pygame.mixer.Sound('image/winSound.mp3').play()
             screen.fill((255,255,255))
             screen.blit(winner,(SCREEN_WIDTH//2 - winner.get_size()[0]//2, SCREEN_HEIGHT//2 - winner.get_size()[0]//2))
-            screen.blit(border_image, border_image.get_rect())
+            #screen.blit(border_image, border_image.get_rect())
             pygame.display.update()
             time.sleep(5)
             return
      
-        screen.blit(border_image, border_image.get_rect())
+        #screen.blit(border_image, border_image.get_rect())
         pygame.display.flip()
         SCORE += 14
         FramePerSec.tick(FPS)
